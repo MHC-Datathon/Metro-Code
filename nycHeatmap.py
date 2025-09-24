@@ -2,10 +2,7 @@ import pandas as pd
 import folium
 from folium.plugins import HeatMap
 
-# --------------------------
-# Step 1: Load data efficiently
-# --------------------------
-print("🗓️ Loading data for full week heatmap...")
+
 chunk_size = 10000
 chunks = []
 total_rows = 0
@@ -27,15 +24,11 @@ df = pd.concat(chunks, ignore_index=True)
 df_small = df.tail(1000000).copy()
 print(f"Using {len(df_small)} rows for full week analysis")
 
-# --------------------------
-# Step 2: Create day and time period columns
-# --------------------------
+
 df_small["day_of_week"] = df_small["First Occurrence"].dt.dayofweek  # 0=Monday, 6=Sunday
 df_small["hour"] = df_small["First Occurrence"].dt.hour
 
-# --------------------------
-# Step 3: Create all day/time combinations
-# --------------------------
+
 day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 time_periods = [
     ("Early Morning (4-8h)", 4, 8),
@@ -67,19 +60,17 @@ for day_idx in range(7):  # Monday to Sunday
             all_periods.append(period_label)
             heat_layers_data.append(heat_data)
             
-            print(f"✅ {day_names[day_idx]} {time_name}: {len(period_data)} violations")
+            print(f" {day_names[day_idx]} {time_name}: {len(period_data)} violations")
         else:
             period_label = f"{day_names[day_idx]} {time_name} ({len(period_data)} violations)"
             all_periods.append(period_label)
             heat_layers_data.append([[40.7128, -74.0060, 0.1]])
             
-            print(f"⚠️  {day_names[day_idx]} {time_name}: {len(period_data)} violations (low data)")
+            print(f"  {day_names[day_idx]} {time_name}: {len(period_data)} violations (low data)")
 
 print(f"Total periods created: {len(all_periods)}")
 
-# --------------------------
-# Step 4: Create map with inconspicuous slider
-# --------------------------
+
 m = folium.Map(location=[40.7128, -74.0060], zoom_start=11)
 
 # Add all heatmaps to the map
@@ -92,7 +83,7 @@ for i, heat_data in enumerate(heat_layers_data):
         min_opacity=0.3
     ).add_to(folium.FeatureGroup(name=f'period_{i}').add_to(m))
 
-# Create inconspicuous but usable slider
+#make slider thing
 max_index = len(all_periods) - 1
 
 html = f"""
@@ -146,21 +137,10 @@ document.addEventListener('DOMContentLoaded', function() {{
 
 m.get_root().html.add_child(folium.Element(html))
 
-# --------------------------
-# Step 7: Save to HTML
-# --------------------------
+
 m.save("violations_heatmap_week_hour_slider.html")
 print("\n" + "="*60)
-print("🗺️  CLEAN HEATMAP WITH INCONSPICUOUS SLIDER!")
 print("="*60)
-print(f"📍 Total violations processed: {len(df_small):,}")
-print(f"⏱️  Time periods available: {len(all_periods)}")
-print(f"📁 File saved: violations_heatmap_week_hour_slider.html")
-
-print("\n📖 HOW TO USE:")
-print("1. Open 'violations_heatmap_week_hour_slider.html' in your browser")
-print("2. 🎚️  Small slider in BOTTOM-RIGHT corner (inconspicuous!)")
-print("3. Drag slider to explore patterns across the full week")
-print("4. Colors: Blue (low) → Cyan → Lime → Orange → Red (high)")
-print("5. Covers all 7 days with 5 time periods each")
-print("="*60)
+print(f" Total violations processed: {len(df_small):,}")
+print(f" Time periods available: {len(all_periods)}")
+print(f"File saved: violations_heatmap_week_hour_slider.html")
